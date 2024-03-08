@@ -2,6 +2,8 @@
 provider "azurerm" {
   features {}
 }
+provider "azuread" {
+}
 
 # Create a new resource group, use declared variable values for name and location
 resource "azurerm_resource_group" "rg1" {
@@ -25,6 +27,12 @@ resource "azurerm_role_assignment" "rolespn" {
   depends_on           = [ module.ServicePrincipal ]
 }
 
+resource "azuread_group" "admin_group"{
+  display_name = var.admin_group_name
+  security_enabled = true
+  owners = [ "49b998a7-aa04-4db3-aaa7-426d9e2bfa92" ]
+}
+
 module "KeyVault" {
   source                      = "./Modules/KeyVault"
   key_vault_name              = var.key_vault_name
@@ -35,6 +43,14 @@ module "KeyVault" {
   service_principal_tenant_id = module.ServicePrincipal.service_principal_tenant_id
 }
 
+
+resource "azurerm_role_assignment" "rolekv_group" {
+  scope                = "/subscriptions/b38e5d20-9ac1-43eb-8531-c1d425068111/resourceGroups/${var.rgname}/providers/Microsoft.KeyVault/vaults/${var.key_vault_name}"
+  role_definition_name = "Key Vault Administrator"
+  principal_id         = azuread_group.admin_group.id
+
+  depends_on = [ module.KeyVault,azuread_group.admin_group ]
+}
 
 resource "azurerm_role_assignment" "rolekv_user" {
   scope                = "/subscriptions/b38e5d20-9ac1-43eb-8531-c1d425068111/resourceGroups/${var.rgname}/providers/Microsoft.KeyVault/vaults/${var.key_vault_name}"
@@ -65,6 +81,15 @@ resource "azurerm_key_vault_secret" "key_vault_secret" {
    ]
 }
 
+module NATGateway {
+  source = "./Modules/NATGateway"
+
+  location = var.location
+  resource_group_name = var.rgname
+  pip_name = var.nat_pip_name
+  nat_name = var.nat_name
+}
+
 module "AppGateway" {
   source                  = "./Modules/AppGateway"
 
@@ -77,6 +102,35 @@ module "AppGateway" {
   aks_subnet_pool         = var.aks_subnet_pool
   appgw_subnet_pool       = var.appgw_subnet_pool
   vnet_address_pool       = var.vnet_address_pool
+  nat_gateway_id          = module.NATGateway.nat_gateway_id
 
-  depends_on              = [ azurerm_resource_group.rg1 ]
+  depends_on              = [ azurerm_resource_group.rg1,module.NATGateway ]
+}
+
+module "LogAnalytics" {
+  source                = "./Modules/LogAnalytics"
+
+  la_workspace_name     = var.la_workspace_name
+  location              = var.location
+  resource_group_name   = var.rgname
+}
+
+module "AKS" {
+  source                  = "./Modules/AKS"
+  depends_on              = [ module.AppGateway,module.LogAnalytics,module.NATGateway ]
+
+  cluster_name            = var.cluster_name
+  kubernetes_version      = var.kubernetes_version
+  admin_group_object_id   = azuread_group.admin_group.id
+  vm_size                 = var.vm_size
+  node_count              = var.node_count
+  resource_group_name     = var.rgname
+  location                = var.location
+  la_workspace_id         = module.LogAnalytics.la_workspace_id
+  appgw_aks_subnet        = module.AppGateway.aks_subnet_id
+  appgw_gw_subnet         = module.AppGateway.appgw_subnet_id
+  appgw_gw_id             = module.AppGateway.appgw_id
+  dns_service_ip          = var.aks_dns_service_ip
+  service_cidr            = var.aks_service_cidr
+  nat_gateway_id          = module.NATGateway.nat_gateway_id
 }

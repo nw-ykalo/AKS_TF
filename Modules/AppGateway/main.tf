@@ -9,7 +9,7 @@ resource "azurerm_subnet" "AppGW_Subnet" {
   name                 = var.appgw_subnet_name
   resource_group_name  = var.resource_group_name
   virtual_network_name = var.virtual_network_name
-  address_prefixes     = [var.aks_subnet_pool]
+  address_prefixes     = [var.appgw_subnet_pool]
   depends_on = [ azurerm_virtual_network.AKS_VNet ]
 }
 
@@ -19,6 +19,11 @@ resource "azurerm_subnet" "AKS_Subnet" {
   virtual_network_name = var.virtual_network_name
   address_prefixes     = [var.aks_subnet_pool]
   depends_on = [ azurerm_virtual_network.AKS_VNet ]
+}
+
+resource "azurerm_subnet_nat_gateway_association" "example" {
+  subnet_id      = azurerm_subnet.AKS_Subnet.id
+  nat_gateway_id = var.nat_gateway_id
 }
 
 resource "azurerm_public_ip" "AppGW_PIP" {

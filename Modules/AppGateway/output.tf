@@ -7,7 +7,7 @@ output aks_subnet_id {
 }
 
 output appgw_subnet_id {
-    value = azurerm_subnet.AppGW_Subnet
+    value = azurerm_subnet.AppGW_Subnet.id
 }
 
 output public_ip_address {
@@ -16,4 +16,8 @@ output public_ip_address {
 
 output public_ip_id {
     value = azurerm_public_ip.AppGW_PIP.id
+}
+
+output appgw_id {
+    value = azurerm_application_gateway.network.id
 }

@@ -33,3 +33,7 @@ variable appgw_subnet_pool {
 variable vnet_address_pool {
     type = string
 }
+
+variable nat_gateway_id {
+    type = string
+}
