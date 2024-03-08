@@ -7,7 +7,9 @@ metadata:
 spec:
   rules:
   - http:
-      paths: /guestbook/
+      paths:
+      - path: /guestbook
+        pathType: Exact
       - backend:
           serviceName: frontend
           servicePort: 80
