@@ -8,8 +8,11 @@ spec:
   rules:
   - http:
       paths:
-      - path: /guestbook
+      - path: /
         pathType: Exact
-      - backend:
-          serviceName: frontend
-          servicePort: 80
+        backend:
+          service:
+            name: aspnetapp
+            port:
+              number: 80
+        pathType: Exact
