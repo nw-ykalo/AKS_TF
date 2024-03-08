@@ -8,7 +8,7 @@ spec:
   rules:
   - http:
       paths:
-      - path: /guestbook/
+      - path: /
         pathType: Exact
         backend:
           service:
