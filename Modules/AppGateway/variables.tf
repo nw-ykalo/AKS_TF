@@ -37,3 +37,7 @@ variable vnet_address_pool {
 variable nat_gateway_id {
     type = string
 }
+
+variable appgw_name {
+    type = string
+}

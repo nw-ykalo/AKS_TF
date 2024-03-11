@@ -6,14 +6,18 @@ resource "azurerm_kubernetes_cluster" "k8s" {
   kubernetes_version  = var.kubernetes_version
  
   node_resource_group = "${var.cluster_name}-node-rg"
+  local_account_disabled = true
  
   default_node_pool {
     name                 = "agentpool"
-    node_count           = var.node_count
+    #node_count           = var.node_count
     vm_size              = var.vm_size
     vnet_subnet_id       = var.appgw_aks_subnet
     type                 = "VirtualMachineScaleSets"
     orchestrator_version = var.kubernetes_version
+    max_count            = 5
+    min_count            = var.node_count
+    enable_auto_scaling  = true
     # os_disk_type = "value"
     # os_disk_size_gb = 0
   }

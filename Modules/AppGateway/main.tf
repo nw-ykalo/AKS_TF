@@ -48,7 +48,7 @@ locals {
 
 resource "azurerm_application_gateway" "network" {
   depends_on          = [ azurerm_public_ip.AppGW_PIP,azurerm_subnet.AppGW_Subnet ]
-  name                = "AKS_AppGW"
+  name                 = var.appgw_name
   resource_group_name = var.resource_group_name
   location            = var.location
 
@@ -80,7 +80,6 @@ resource "azurerm_application_gateway" "network" {
   backend_http_settings {
     name                  = local.http_setting_name
     cookie_based_affinity = "Disabled"
-    path                  = "/path1/"
     port                  = 80
     protocol              = "Http"
     request_timeout       = 60

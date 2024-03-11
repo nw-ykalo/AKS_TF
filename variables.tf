@@ -42,6 +42,10 @@ variable aks_subnet_name {
     type = string
 }
 
+variable appgw_name {
+    type = string
+}
+
 variable appgw_subnet_name {
     type = string
 }

@@ -21,6 +21,7 @@ nat_name                 = "aks_natgw"
 nat_pip_name             = "aks_natgw_pip"
 
 # AppGW
+appgw_name               = "AKS_AppGW"
 virtual_network_name     = "AKS_VNet"
 aks_subnet_name          = "AKS_Subnet"
 appgw_subnet_name        = "AppGW_Subnet"
@@ -36,6 +37,6 @@ la_workspace_name        = "aks-loganalytics-ykal"
 cluster_name             = "test-aks-cluster"
 kubernetes_version       = "1.29"
 vm_size                  = "Standard_A2_v2"
-node_count               = 5
+node_count               = 4
 aks_dns_service_ip       = "10.240.0.53"
 aks_service_cidr         = "10.240.0.0/12"

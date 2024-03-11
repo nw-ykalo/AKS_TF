@@ -93,6 +93,7 @@ module NATGateway {
 module "AppGateway" {
   source                  = "./Modules/AppGateway"
 
+  appgw_name              = var.appgw_name
   virtual_network_name    = var.virtual_network_name
   location                = var.location
   resource_group_name     = var.rgname
@@ -133,4 +134,38 @@ module "AKS" {
   dns_service_ip          = var.aks_dns_service_ip
   service_cidr            = var.aks_service_cidr
   nat_gateway_id          = module.NATGateway.nat_gateway_id
+}
+
+# Add required permissions for the AGIC client ID
+# Contributer on the AppGW
+resource "azurerm_role_assignment" "appgw_agic_role" {
+  scope                = module.AppGateway.appgw_id
+  role_definition_name = "Contributor"
+  principal_id         = module.AKS.agic_client_id
+
+  depends_on = [ module.AKS,module.AppGateway ]
+}
+# Reader on the Resource Group
+resource "azurerm_role_assignment" "resourcegroup_agic_role" {
+  scope                = azurerm_resource_group.rg1.id
+  role_definition_name = "Reader"
+  principal_id         = module.AKS.agic_client_id
+
+  depends_on = [ module.AKS,module.AppGateway ]
+}
+# Contributor on the VNet
+resource "azurerm_role_assignment" "vnet_agic_role" {
+  scope                = module.AppGateway.aks_vnet_id
+  role_definition_name = "Contributor"
+  principal_id         = module.AKS.agic_client_id
+
+  depends_on = [ module.AKS,module.AppGateway ]
+}
+# VNet Conrtibutor for AKS cluster principal ID
+resource "azurerm_role_assignment" "vnet_k8s_role" {
+  scope                = module.AppGateway.aks_vnet_id
+  role_definition_name = "Contributor"
+  principal_id         = module.AKS.aks_cluster_principal_id
+
+  depends_on = [ module.AKS,module.AppGateway ]
 }
